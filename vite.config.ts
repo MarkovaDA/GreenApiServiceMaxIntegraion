@@ -15,6 +15,10 @@ export default defineConfig({
       '@': path.resolve(rootDir, 'src'),
     },
   },
+  build: {
+    // SVG с цветами вида #3B9702 ломаются в data: URI — отдаём отдельными файлами.
+    assetsInlineLimit: 0,
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
