@@ -7,6 +7,8 @@ const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Относительные пути — удобно для GitHub Pages и любого static-hosting.
+  base: './',
   plugins: [react()],
   resolve: {
     alias: {

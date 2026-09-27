@@ -21,6 +21,18 @@ npm run dev
 
 Приложение откроется по адресу, который покажет Vite (обычно `http://localhost:5173`).
 
+### Деплой
+
+Продакшен: [https://markovada.github.io/GreenApiServiceMaxIntegraion/](https://markovada.github.io/GreenApiServiceMaxIntegraion/)
+
+Пуш в `develop` запускает GitHub Actions → GitHub Pages. Вручную:
+
+```bash
+npm run deploy
+```
+
+В настройках репозитория: **Settings → Pages → Source: GitHub Actions**.
+
 ### Другие команды
 
 | Команда | Описание |
