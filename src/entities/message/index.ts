@@ -1,2 +1,2 @@
-export type { Message, MessageDirection } from '@/shared/types';
+export type { Message, MessageDirection } from './types';
 export { MessageBubble } from './ui/MessageBubble';

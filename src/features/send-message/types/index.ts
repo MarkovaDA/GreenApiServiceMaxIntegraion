@@ -1,4 +1,5 @@
-import type { Message, Session } from '@/shared/types';
+import type { Message } from '@/entities/message';
+import type { Session } from '@/entities/session';
 
 export type SendMessageFormProps = {
   session: Session;

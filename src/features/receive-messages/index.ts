@@ -1,1 +1,2 @@
-export { useReceiveMessages } from './model/use-receive-messages';
+export { useReceiveMessages } from './hooks/use-receive-messages';
+export type { ReceiveStatus } from './types';

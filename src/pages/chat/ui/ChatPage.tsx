@@ -1,79 +1,24 @@
-import { useCallback, useState } from 'react';
 import { useReceiveMessages } from '@/features/receive-messages';
 import { ChatLayout } from '@/widgets/chat-layout';
+import { LanguageSwitcher, useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import type { ChatPageProps } from '../types';
-import type { Chat, Message } from '@/shared/types';
+import { useChatState } from '../hooks/use-chat-state';
 
 /**
- * Страница чатов: список диалогов, активный чат, входящие/исходящие сообщения.
+ * Страница чатов: композиция состояния и layout.
  * Сессия GREEN-API уже есть — сюда попадаем после успешного логина.
  */
 export function ChatPage({ session, onLogout }: ChatPageProps) {
-  const [chats, setChats] = useState<Chat[]>([]);
+  const { t } = useI18n();
+  const { chats, activeChat, messages, appendMessage, createChat, selectChat } =
+    useChatState();
 
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [messagesByChat, setMessagesByChat] = useState<
-    Record<string, Message[]>
-  >({});
-
-  const activeChat = chats.find((chat) => chat.id === activeChatId) ?? null;
-  const messages = activeChatId ? (messagesByChat[activeChatId] ?? []) : [];
-
-  /**
-   * Добавляет сообщение в историю чата (без дублей по `id`).
-   * Если чата ещё нет в списке — создаёт его из `chatId`.
-   */
-  const appendMessage = useCallback((message: Message) => {
-    setMessagesByChat((prev) => {
-      const list = prev[message.chatId] ?? [];
-
-      if (list.some((item) => item.id === message.id)) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        [message.chatId]: [...list, message],
-      };
-    });
-
-    setChats((prev) => {
-      if (prev.some((chat) => chat.id === message.chatId)) {
-        return prev;
-      }
-
-      const phone = message.chatId.replace(/@c\.us$/, '');
-
-      return [
-        ...prev,
-        {
-          id: message.chatId,
-          phone,
-          title: phone,
-        },
-      ];
-    });
-  }, []);
-
-  useReceiveMessages({
+  const { status: receiveStatus, error: receiveError } = useReceiveMessages({
     session,
     enabled: true,
     onMessage: appendMessage,
   });
-
-  /** Добавляет новый чат в список и сразу делает его активным. */
-  const handleCreateChat = (chat: Chat) => {
-    setChats((prev) => {
-      if (prev.some((item) => item.id === chat.id)) {
-        return prev;
-      }
-
-      return [...prev, chat];
-    });
-
-    setActiveChatId(chat.id);
-  };
 
   return (
     <ChatLayout
@@ -81,10 +26,17 @@ export function ChatPage({ session, onLogout }: ChatPageProps) {
       chats={chats}
       activeChat={activeChat}
       messages={messages}
-      onCreateChat={handleCreateChat}
-      onSelectChat={(chat) => setActiveChatId(chat.id)}
+      onCreateChat={createChat}
+      onSelectChat={selectChat}
       onMessageSent={appendMessage}
-      headerSlot={<Button onClick={onLogout}>Выйти</Button>}
+      receiveStatus={receiveStatus}
+      receiveError={receiveError}
+      headerSlot={
+        <div className="chat-topbar__actions">
+          <LanguageSwitcher />
+          <Button onClick={onLogout}>{t.chat.logout}</Button>
+        </div>
+      }
     />
   );
 }

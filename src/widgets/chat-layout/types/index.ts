@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
-import type { Chat, Message, Session } from '@/shared/types';
+import type { Chat } from '@/entities/chat';
+import type { Message } from '@/entities/message';
+import type { Session } from '@/entities/session';
+import type { ReceiveStatus } from '@/features/receive-messages';
 
 export type ChatLayoutProps = {
   session: Session;
@@ -10,4 +13,6 @@ export type ChatLayoutProps = {
   onSelectChat: (chat: Chat) => void;
   onMessageSent: (message: Message) => void;
   headerSlot?: ReactNode;
+  receiveStatus: ReceiveStatus;
+  receiveError: string | null;
 };

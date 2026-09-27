@@ -1,4 +1,4 @@
-import type { Message } from '@/shared/types';
+import type { Message } from '@/entities/message';
 
 export type MessageListProps = {
   messages: Message[];

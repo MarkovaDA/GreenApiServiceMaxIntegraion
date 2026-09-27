@@ -1,12 +1,9 @@
-import { phoneToChatId } from '@/shared/lib';
-import type { Chat } from '@/shared/types';
+import type { Chat } from '@/entities/chat';
 
 /**
- * Создаёт локальный объект чата по номеру телефона.
- * На API запрос не ходит — чат появляется только в UI.
+ * Собирает локальный объект чата из номера и `chatId` (из CheckAccount).
  */
-export function createChatFromPhone(phone: string): Chat {
-  const chatId = phoneToChatId(phone);
+export function createChatFromPhone(phone: string, chatId: string): Chat {
   const digits = phone.replace(/\D/g, '');
 
   return {

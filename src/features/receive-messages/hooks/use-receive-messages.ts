@@ -1,57 +1,39 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { deleteNotification, receiveNotification } from '@/shared/api';
-import type { IncomingTextNotification, Message } from '@/shared/types';
-import type { UseReceiveMessagesParams } from '../types';
-
-/**
- * Достаёт текстовое входящее сообщение из тела уведомления GREEN-API.
- * Другие типы вебхуков и неполные данные игнорируются (`null`).
- */
-function parseIncomingMessage(body: unknown): Message | null {
-  const notification = body as IncomingTextNotification;
-
-  if (notification.typeWebhook !== 'incomingMessageReceived') {
-    return null;
-  }
-
-  const text = notification.messageData?.textMessageData?.textMessage;
-  const chatId = notification.senderData?.chatId;
-  const id = notification.idMessage;
-
-  if (!text || !chatId || !id) {
-    return null;
-  }
-
-  return {
-    id,
-    chatId,
-    text,
-    direction: 'incoming',
-    timestamp: notification.timestamp
-      ? notification.timestamp * 1000
-      : Date.now(),
-  };
-}
+import { getMessages } from '@/shared/i18n';
+import { parseIncomingMessage } from '../lib/parse-incoming-message';
+import type {
+  ReceiveStatus,
+  UseReceiveMessagesParams,
+  UseReceiveMessagesResult,
+} from '../types';
 
 /**
  * Хук long-polling входящих сообщений.
  * Цикл: ReceiveNotification → разбор → callback → DeleteNotification.
- * Останавливается при размонтировании или смене сессии.
+ * Возвращает статус соединения для отображения в UI.
  */
 export function useReceiveMessages({
   session,
   enabled,
   onMessage,
-}: UseReceiveMessagesParams) {
+}: UseReceiveMessagesParams): UseReceiveMessagesResult {
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
+  const [status, setStatus] = useState<ReceiveStatus>('idle');
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!session || !enabled) {
+      setStatus('idle');
+      setError(null);
       return;
     }
 
     let cancelled = false;
+    setStatus('listening');
+    setError(null);
 
     /** Бесконечный опрос очереди уведомлений, пока хук активен. */
     const poll = async () => {
@@ -62,6 +44,9 @@ export function useReceiveMessages({
           if (cancelled) {
             break;
           }
+
+          setStatus('listening');
+          setError(null);
 
           if (!notification) {
             continue;
@@ -74,10 +59,17 @@ export function useReceiveMessages({
           }
 
           await deleteNotification(session, notification.receiptId);
-        } catch {
+        } catch (err) {
           if (cancelled) {
             break;
           }
+
+          const messageText =
+            err instanceof Error
+              ? err.message
+              : getMessages().errors.receiveFailed;
+          setStatus('error');
+          setError(messageText);
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
@@ -90,4 +82,6 @@ export function useReceiveMessages({
       cancelled = true;
     };
   }, [session, enabled]);
+
+  return { status, error };
 }

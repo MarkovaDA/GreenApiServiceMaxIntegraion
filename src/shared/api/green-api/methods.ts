@@ -1,5 +1,7 @@
 import { RECEIVE_TIMEOUT_SEC } from '@/shared/config';
+import { getMessages } from '@/shared/i18n';
 import type {
+  CheckAccountResponse,
   GreenApiCredentials,
   ReceiveNotificationResponse,
   SendMessagePayload,
@@ -23,10 +25,44 @@ export async function sendMessage(
   });
 
   if (!response.ok) {
-    throw new Error(`SendMessage failed: ${response.status}`);
+    throw new Error(
+      `${getMessages().errors.sendMessageHttp}: ${response.status}`,
+    );
   }
 
   return response.json() as Promise<SendMessageResponse>;
+}
+
+/**
+ * Проверяет, есть ли аккаунт MAX на номере телефона (`CheckAccount`).
+ * Возвращает `chatId`, который нужно использовать для отправки.
+ */
+export async function checkAccount(
+  credentials: GreenApiCredentials,
+  phoneNumber: number,
+): Promise<CheckAccountResponse> {
+  const url = buildInstanceUrl(credentials, 'checkAccount');
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phoneNumber }),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `${getMessages().errors.checkAccountHttp}: ${response.status}`,
+    );
+  }
+
+  const data = (await response.json()) as CheckAccountResponse;
+
+  if (data.status === false) {
+    throw new Error(
+      data.reason ?? getMessages().errors.checkAccountRejected,
+    );
+  }
+
+  return data;
 }
 
 /**
@@ -42,7 +78,9 @@ export async function receiveNotification(
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`ReceiveNotification failed: ${response.status}`);
+    throw new Error(
+      `${getMessages().errors.receiveNotificationHttp}: ${response.status}`,
+    );
   }
 
   const text = await response.text();
@@ -67,6 +105,8 @@ export async function deleteNotification(
   const response = await fetch(url, { method: 'DELETE' });
 
   if (!response.ok) {
-    throw new Error(`DeleteNotification failed: ${response.status}`);
+    throw new Error(
+      `${getMessages().errors.deleteNotificationHttp}: ${response.status}`,
+    );
   }
 }

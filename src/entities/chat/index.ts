@@ -1,1 +1,1 @@
-export type { Chat } from '@/shared/types';
+export type { Chat } from './types';

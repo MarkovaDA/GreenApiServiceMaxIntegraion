@@ -1,20 +1,39 @@
 import type { ButtonProps, InputProps, TextareaProps } from './types';
 
 /** Базовая кнопка. */
-export function Button({ children, type = 'button', ...props }: ButtonProps) {
+export function Button({
+  children,
+  type = 'button',
+  className,
+  ...props
+}: ButtonProps) {
   return (
-    <button type={type} {...props}>
+    <button
+      className={['ui-button', className].filter(Boolean).join(' ')}
+      type={type}
+      {...props}
+    >
       {children}
     </button>
   );
 }
 
 /** Базовое текстовое поле. */
-export function Input(props: InputProps) {
-  return <input {...props} />;
+export function Input({ className, ...props }: InputProps) {
+  return (
+    <input
+      className={['ui-input', className].filter(Boolean).join(' ')}
+      {...props}
+    />
+  );
 }
 
 /** Многострочное поле ввода (для текста сообщения). */
-export function Textarea(props: TextareaProps) {
-  return <textarea {...props} />;
+export function Textarea({ className, ...props }: TextareaProps) {
+  return (
+    <textarea
+      className={['ui-textarea', className].filter(Boolean).join(' ')}
+      {...props}
+    />
+  );
 }

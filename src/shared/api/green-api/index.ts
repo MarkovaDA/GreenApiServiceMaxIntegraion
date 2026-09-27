@@ -1,6 +1,6 @@
-export { buildInstanceUrl } from './client';
 export {
   sendMessage,
+  checkAccount,
   receiveNotification,
   deleteNotification,
 } from './methods';
