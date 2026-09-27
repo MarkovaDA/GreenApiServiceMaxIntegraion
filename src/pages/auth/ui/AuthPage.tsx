@@ -10,7 +10,17 @@ export function AuthPage({ onAuth }: AuthPageProps) {
     <section className="auth-page">
       <div className="auth-card">
         <div className="auth-card__top">
-          <h1>{t.appName}</h1>
+          <div className="auth-card__brand">
+            <img
+              className="auth-card__logo"
+              src="/brand/logo-g.svg"
+              alt="GREEN-API"
+            />
+            <div>
+              <p className="auth-card__eyebrow">GREEN-API</p>
+              <h1>{t.appName}</h1>
+            </div>
+          </div>
           <LanguageSwitcher />
         </div>
         <p>{t.auth.subtitle}</p>

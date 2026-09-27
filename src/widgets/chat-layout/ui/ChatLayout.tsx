@@ -31,17 +31,28 @@ export function ChatLayout({
   return (
     <div className="chat-shell">
       <header className="chat-topbar">
-        <div className="chat-topbar__status">
-          <span
-            className={`status-dot status-dot--${receiveStatus}`}
+        <div className="chat-topbar__brand">
+          <img
+            className="chat-topbar__logo"
+            src="/brand/logo-g-white.svg"
+            alt=""
             aria-hidden
           />
-          <span>{statusLabel}</span>
-          {receiveError ? (
-            <span className="chat-topbar__error" role="status">
-              {receiveError}
-            </span>
-          ) : null}
+          <div>
+            <div className="chat-topbar__title">{t.appName}</div>
+            <div className="chat-topbar__status">
+              <span
+                className={`status-dot status-dot--${receiveStatus}`}
+                aria-hidden
+              />
+              <span>{statusLabel}</span>
+              {receiveError ? (
+                <span className="chat-topbar__error" role="status">
+                  {receiveError}
+                </span>
+              ) : null}
+            </div>
+          </div>
         </div>
         {headerSlot}
       </header>

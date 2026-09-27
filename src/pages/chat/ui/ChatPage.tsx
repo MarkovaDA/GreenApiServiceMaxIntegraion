@@ -33,8 +33,10 @@ export function ChatPage({ session, onLogout }: ChatPageProps) {
       receiveError={receiveError}
       headerSlot={
         <div className="chat-topbar__actions">
-          <LanguageSwitcher />
-          <Button onClick={onLogout}>{t.chat.logout}</Button>
+          <LanguageSwitcher variant="onBrand" />
+          <Button className="ui-button--light" onClick={onLogout}>
+            {t.chat.logout}
+          </Button>
         </div>
       }
     />
