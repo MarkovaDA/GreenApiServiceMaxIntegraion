@@ -25,13 +25,13 @@ npm run dev
 
 Продакшен: [https://markovada.github.io/GreenApiServiceMaxIntegraion/](https://markovada.github.io/GreenApiServiceMaxIntegraion/)
 
-Пуш в `develop` запускает GitHub Actions → GitHub Pages. Вручную:
+Пуш в `develop` обновляет ветку `gh-pages` через GitHub Actions. Вручную:
 
 ```bash
 npm run deploy
 ```
 
-В настройках репозитория: **Settings → Pages → Source: GitHub Actions**.
+Один раз включите хостинг: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages` / `/ (root)`**.
 
 ### Другие команды
 
