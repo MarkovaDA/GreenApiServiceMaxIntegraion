@@ -73,9 +73,10 @@ export async function checkAccount(
 export async function receiveNotification(
   credentials: GreenApiCredentials,
   receiveTimeout = RECEIVE_TIMEOUT_SEC,
+  signal?: AbortSignal,
 ): Promise<ReceiveNotificationResponse> {
   const url = `${buildInstanceUrl(credentials, 'receiveNotification')}?receiveTimeout=${receiveTimeout}`;
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
 
   if (!response.ok) {
     throw new Error(
@@ -100,9 +101,10 @@ export async function receiveNotification(
 export async function deleteNotification(
   credentials: GreenApiCredentials,
   receiptId: number,
+  signal?: AbortSignal,
 ): Promise<void> {
   const url = `${buildInstanceUrl(credentials, 'deleteNotification')}/${receiptId}`;
-  const response = await fetch(url, { method: 'DELETE' });
+  const response = await fetch(url, { method: 'DELETE', signal });
 
   if (!response.ok) {
     throw new Error(
