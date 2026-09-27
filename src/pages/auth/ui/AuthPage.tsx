@@ -1,5 +1,6 @@
 import { AuthForm } from '@/features/auth-by-credentials';
 import { LanguageSwitcher, useI18n } from '@/shared/i18n';
+import logoG from '@/shared/assets/logo-g.svg';
 import type { AuthPageProps } from '../types';
 
 /** Страница авторизации: ввод `idInstance` и `apiTokenInstance`. */
@@ -11,11 +12,7 @@ export function AuthPage({ onAuth }: AuthPageProps) {
       <div className="auth-card">
         <div className="auth-card__top">
           <div className="auth-card__brand">
-            <img
-              className="auth-card__logo"
-              src="/brand/logo-g.svg"
-              alt="GREEN-API"
-            />
+            <img className="auth-card__logo" src={logoG} alt="GREEN-API" />
             <div>
               <p className="auth-card__eyebrow">GREEN-API</p>
               <h1>{t.appName}</h1>

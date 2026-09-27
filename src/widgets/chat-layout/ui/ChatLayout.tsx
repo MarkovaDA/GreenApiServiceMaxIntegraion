@@ -1,6 +1,7 @@
 import { CreateChatForm } from '@/features/create-chat';
 import { SendMessageForm } from '@/features/send-message';
 import { MessageList } from '@/widgets/message-list';
+import logoGWhite from '@/shared/assets/logo-g-white.svg';
 import { useI18n } from '@/shared/i18n';
 import type { ChatLayoutProps } from '../types';
 
@@ -34,7 +35,7 @@ export function ChatLayout({
         <div className="chat-topbar__brand">
           <img
             className="chat-topbar__logo"
-            src="/brand/logo-g-white.svg"
+            src={logoGWhite}
             alt=""
             aria-hidden
           />
