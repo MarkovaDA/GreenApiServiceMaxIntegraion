@@ -366,6 +366,11 @@ ul {
     var(--surface-muted);
 }
 
+.chat-main:has(.chat-main__empty) {
+  grid-template-rows: 1fr;
+  place-items: center;
+}
+
 .chat-main__header {
   padding: 0.85rem 1rem;
   background: rgba(255, 255, 255, 0.92);
@@ -376,7 +381,9 @@ ul {
 }
 
 .chat-main__empty {
-  place-self: center;
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
   color: var(--text-muted);
 }
 
