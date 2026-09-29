@@ -1,5 +1,3 @@
-import { CreateChatForm } from '@/features/create-chat';
-import { SendMessageForm } from '@/features/send-message';
 import { MessageList } from '@/widgets/message-list';
 import logoGWhite from '@/shared/assets/logo-g-white.svg';
 import { useI18n } from '@/shared/i18n';
@@ -7,18 +5,21 @@ import type { ChatLayoutProps } from '../types';
 
 /**
  * Каркас экрана чата: сайдбар со списком диалогов и область активного чата.
+ * Формы создания чата и отправки приходят слотами с page-слоя (FSD).
  */
 export function ChatLayout({
-  session,
   chats,
   activeChat,
   messages,
-  onCreateChat,
+  unreadByChat,
   onSelectChat,
-  onMessageSent,
+  sidebarForm,
+  composer,
   headerSlot,
   receiveStatus,
   receiveError,
+  isLoadingHistory = false,
+  historyError = null,
 }: ChatLayoutProps) {
   const { t } = useI18n();
 
@@ -61,23 +62,30 @@ export function ChatLayout({
       <div className="chat-body">
         <aside className="chat-sidebar">
           <h2 className="chat-sidebar__title">{t.chat.sidebarTitle}</h2>
-          <CreateChatForm session={session} onCreate={onCreateChat} />
+          {sidebarForm}
           <ul className="chat-list">
-            {chats.map((chat) => (
-              <li key={chat.id}>
-                <button
-                  type="button"
-                  className={
-                    activeChat?.id === chat.id
-                      ? 'chat-list__item chat-list__item--active'
-                      : 'chat-list__item'
-                  }
-                  onClick={() => onSelectChat(chat)}
-                >
-                  {chat.title}
-                </button>
-              </li>
-            ))}
+            {chats.map((chat) => {
+              const unread = unreadByChat[chat.id] ?? 0;
+
+              return (
+                <li key={chat.id}>
+                  <button
+                    type="button"
+                    className={
+                      activeChat?.id === chat.id
+                        ? 'chat-list__item chat-list__item--active'
+                        : 'chat-list__item'
+                    }
+                    onClick={() => onSelectChat(chat)}
+                  >
+                    <span className="chat-list__title">{chat.title}</span>
+                    {unread > 0 ? (
+                      <span className="chat-list__badge">{unread}</span>
+                    ) : null}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </aside>
 
@@ -85,12 +93,23 @@ export function ChatLayout({
           {activeChat ? (
             <>
               <header className="chat-main__header">{activeChat.title}</header>
-              <MessageList messages={messages} />
-              <SendMessageForm
-                session={session}
-                chatId={activeChat.id}
-                onSent={onMessageSent}
-              />
+              <div className="chat-main__feed">
+                {isLoadingHistory ? (
+                  <p className="chat-main__hint" role="status">
+                    {t.chat.loadingHistory}
+                  </p>
+                ) : null}
+                {historyError ? (
+                  <p
+                    className="chat-main__hint chat-main__hint--error"
+                    role="alert"
+                  >
+                    {historyError}
+                  </p>
+                ) : null}
+                <MessageList messages={messages} />
+              </div>
+              {composer}
             </>
           ) : (
             <p className="chat-main__empty">{t.chat.emptyMain}</p>

@@ -20,6 +20,34 @@ export type CheckAccountResponse = {
   reason?: string;
 };
 
+export type InstanceState =
+  | 'authorized'
+  | 'notAuthorized'
+  | 'blocked'
+  | 'starting'
+  | 'suspended'
+  | 'pendingPassword';
+
+export type GetStateInstanceResponse = {
+  stateInstance: InstanceState | string;
+};
+
+export type GetChatHistoryPayload = {
+  chatId: string;
+  count?: number;
+};
+
+export type ChatHistoryItem = {
+  type?: 'outgoing' | 'incoming' | string;
+  idMessage?: string;
+  timestamp?: number;
+  typeMessage?: string;
+  chatId?: string;
+  textMessage?: string;
+  extendedTextMessage?: { text?: string };
+  caption?: string;
+};
+
 export type ReceiveNotificationResponse = {
   receiptId: number;
   body: unknown;

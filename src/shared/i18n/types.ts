@@ -7,6 +7,7 @@ export type Messages = {
     idInstancePlaceholder: string;
     apiTokenPlaceholder: string;
     submit: string;
+    checking: string;
   };
   chat: {
     sidebarTitle: string;
@@ -18,6 +19,8 @@ export type Messages = {
     checking: string;
     messagePlaceholder: string;
     send: string;
+    sending: string;
+    loadingHistory: string;
   };
   status: {
     listening: string;
@@ -29,12 +32,17 @@ export type Messages = {
     checkPhoneFailed: string;
     sendFailed: string;
     receiveFailed: string;
-    phoneEmpty: string;
     checkAccountRejected: string;
     sendMessageHttp: string;
     checkAccountHttp: string;
     receiveNotificationHttp: string;
+    receiveNotificationInvalidJson: string;
     deleteNotificationHttp: string;
+    getStateInstanceHttp: string;
+    getChatHistoryHttp: string;
+    invalidCredentials: string;
+    instanceNotAuthorized: string;
+    loadHistoryFailed: string;
   };
   language: {
     label: string;

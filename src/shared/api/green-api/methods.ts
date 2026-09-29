@@ -1,7 +1,10 @@
 import { RECEIVE_TIMEOUT_SEC } from '@/shared/config';
 import { getMessages } from '@/shared/i18n';
 import type {
+  ChatHistoryItem,
   CheckAccountResponse,
+  GetChatHistoryPayload,
+  GetStateInstanceResponse,
   GreenApiCredentials,
   ReceiveNotificationResponse,
   SendMessagePayload,
@@ -31,6 +34,25 @@ export async function sendMessage(
   }
 
   return response.json() as Promise<SendMessageResponse>;
+}
+
+/**
+ * Проверяет состояние инстанса (`GetStateInstance`).
+ * Используется при входе, чтобы отсечь неверные credentials.
+ */
+export async function getStateInstance(
+  credentials: GreenApiCredentials,
+): Promise<GetStateInstanceResponse> {
+  const url = buildInstanceUrl(credentials, 'getStateInstance');
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      `${getMessages().errors.getStateInstanceHttp}: ${response.status}`,
+    );
+  }
+
+  return response.json() as Promise<GetStateInstanceResponse>;
 }
 
 /**
@@ -66,6 +88,30 @@ export async function checkAccount(
 }
 
 /**
+ * Загружает историю сообщений чата (`GetChatHistory`).
+ * Ответ приходит от новых к старым — вызывающая сторона сама сортирует.
+ */
+export async function getChatHistory(
+  credentials: GreenApiCredentials,
+  payload: GetChatHistoryPayload,
+): Promise<ChatHistoryItem[]> {
+  const url = buildInstanceUrl(credentials, 'getChatHistory');
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `${getMessages().errors.getChatHistoryHttp}: ${response.status}`,
+    );
+  }
+
+  return response.json() as Promise<ChatHistoryItem[]>;
+}
+
+/**
  * Забирает одно входящее уведомление из очереди инстанса (`ReceiveNotification`).
  * Долгий long-poll: ждёт до `receiveTimeout` секунд.
  * @returns уведомление или `null`, если за время ожидания ничего не пришло
@@ -90,7 +136,11 @@ export async function receiveNotification(
     return null;
   }
 
-  return JSON.parse(text) as ReceiveNotificationResponse;
+  try {
+    return JSON.parse(text) as ReceiveNotificationResponse;
+  } catch {
+    throw new Error(getMessages().errors.receiveNotificationInvalidJson);
+  }
 }
 
 /**

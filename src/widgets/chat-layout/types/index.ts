@@ -1,18 +1,19 @@
 import type { ReactNode } from 'react';
 import type { Chat } from '@/entities/chat';
 import type { Message } from '@/entities/message';
-import type { Session } from '@/entities/session';
 import type { ReceiveStatus } from '@/features/receive-messages';
 
 export type ChatLayoutProps = {
-  session: Session;
   chats: Chat[];
   activeChat: Chat | null;
   messages: Message[];
-  onCreateChat: (chat: Chat) => void;
+  unreadByChat: Record<string, number>;
   onSelectChat: (chat: Chat) => void;
-  onMessageSent: (message: Message) => void;
+  sidebarForm: ReactNode;
+  composer: ReactNode;
   headerSlot?: ReactNode;
   receiveStatus: ReceiveStatus;
   receiveError: string | null;
+  isLoadingHistory?: boolean;
+  historyError?: string | null;
 };

@@ -326,6 +326,10 @@ ul {
 
 .chat-list__item {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   text-align: left;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -337,6 +341,25 @@ ul {
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
+}
+
+.chat-list__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-list__badge {
+  flex-shrink: 0;
+  min-width: 1.25rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .chat-list__item:hover {
@@ -387,6 +410,29 @@ ul {
   color: var(--text-muted);
 }
 
+.chat-main__hint {
+  margin: 0;
+  padding: 0.5rem 1rem 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.chat-main__hint--error {
+  color: #b42318;
+}
+
+.chat-main__feed {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-main__feed .message-list {
+  flex: 1;
+  min-height: 0;
+}
+
 .message-list {
   display: flex;
   flex-direction: column;
@@ -409,8 +455,18 @@ ul {
 }
 
 .message-bubble p {
+  margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.message-bubble__time {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  color: var(--text-muted);
+  text-align: right;
 }
 
 .message-bubble--incoming {

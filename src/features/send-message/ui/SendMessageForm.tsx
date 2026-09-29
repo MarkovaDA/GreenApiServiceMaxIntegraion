@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type KeyboardEvent } from 'react';
 import { sendMessage } from '@/shared/api';
 import { useI18n } from '@/shared/i18n';
 import { Button, Textarea } from '@/shared/ui';
@@ -7,6 +7,7 @@ import type { SendMessageFormProps } from '../types';
 /**
  * Форма отправки текстового сообщения в выбранный чат.
  * После успешного `SendMessage` отдаёт исходящее сообщение наружу через `onSent`.
+ * Enter отправляет, Shift+Enter — новая строка.
  */
 export function SendMessageForm({
   session,
@@ -19,8 +20,8 @@ export function SendMessageForm({
   const [error, setError] = useState<string | null>(null);
 
   /** Отправляет сообщение в GREEN-API и очищает поле ввода. */
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (event?: FormEvent) => {
+    event?.preventDefault();
 
     const message = text.trim();
 
@@ -54,6 +55,13 @@ export function SendMessageForm({
     }
   };
 
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void handleSubmit();
+    }
+  };
+
   return (
     <form className="composer" onSubmit={handleSubmit}>
       <Textarea
@@ -61,10 +69,11 @@ export function SendMessageForm({
         placeholder={t.chat.messagePlaceholder}
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={handleKeyDown}
         required
       />
       <Button type="submit" disabled={isSending}>
-        {t.chat.send}
+        {isSending ? t.chat.sending : t.chat.send}
       </Button>
       {error ? (
         <p className="form-error" role="alert">

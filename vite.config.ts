@@ -15,12 +15,22 @@ export default defineConfig({
       '@': path.resolve(rootDir, 'src'),
     },
   },
+  server: {
+    // В dev ходим на GREEN-API через прокси — проще смотреть Network и нет CORS-сюрпризов.
+    proxy: {
+      '/green-api': {
+        target: 'https://api.green-api.com',
+        changeOrigin: true,
+        rewrite: (requestPath) => requestPath.replace(/^\/green-api/, '/v3'),
+      },
+    },
+  },
   build: {
     // SVG с цветами вида #3B9702 ломаются в data: URI — отдаём отдельными файлами.
     assetsInlineLimit: 0,
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
   },
 });

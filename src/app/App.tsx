@@ -6,7 +6,7 @@ import {
   type Session,
 } from '@/entities/session';
 import { AuthPage } from '@/pages/auth';
-import { ChatPage } from '@/pages/chat';
+import { ChatPage, clearChatState } from '@/pages/chat';
 import './styles/index.css';
 
 /**
@@ -23,6 +23,9 @@ export function App() {
   };
 
   const handleLogout = () => {
+    if (session) {
+      clearChatState(session.idInstance);
+    }
     clearSession();
     setSession(null);
   };

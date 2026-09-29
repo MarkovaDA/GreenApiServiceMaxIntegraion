@@ -1,79 +1,176 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Chat } from '@/entities/chat';
 import type { Message } from '@/entities/message';
+import {
+  loadChatState,
+  saveChatState,
+  type ChatStateSnapshot,
+} from '../lib/chat-storage';
+
+const emptySnapshot = (): ChatStateSnapshot => ({
+  chats: [],
+  activeChatId: null,
+  messagesByChat: {},
+  unreadByChat: {},
+  historyLoaded: {},
+});
 
 /**
  * Состояние списка чатов и историй сообщений для страницы чата.
- * Страница только композирует UI — логика хранения здесь.
+ * Переживает F5 через sessionStorage, привязанный к idInstance.
  */
-export function useChatState() {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [activeChatId, setActiveChatId] = useState<string | null>(null);
-  const [messagesByChat, setMessagesByChat] = useState<
-    Record<string, Message[]>
-  >({});
+export function useChatState(idInstance: string) {
+  const [snapshot, setSnapshot] = useState<ChatStateSnapshot>(() => {
+    return loadChatState(idInstance) ?? emptySnapshot();
+  });
 
-  const activeChat = chats.find((chat) => chat.id === activeChatId) ?? null;
-  const messages = activeChatId ? (messagesByChat[activeChatId] ?? []) : [];
+  useEffect(() => {
+    saveChatState(idInstance, snapshot);
+  }, [idInstance, snapshot]);
+
+  const activeChat =
+    snapshot.chats.find((chat) => chat.id === snapshot.activeChatId) ?? null;
+  const messages = snapshot.activeChatId
+    ? (snapshot.messagesByChat[snapshot.activeChatId] ?? [])
+    : [];
 
   /**
    * Добавляет сообщение в историю чата (без дублей по `id`).
-   * Если чата ещё нет в списке — создаёт его из `chatId`.
+   * Если чата ещё нет — создаёт его. Для входящих в неактивный чат
+   * увеличивает счётчик непрочитанных.
    */
   const appendMessage = useCallback((message: Message) => {
-    setMessagesByChat((prev) => {
-      const list = prev[message.chatId] ?? [];
+    setSnapshot((prev) => {
+      const list = prev.messagesByChat[message.chatId] ?? [];
 
       if (list.some((item) => item.id === message.id)) {
         return prev;
       }
 
+      const chats = prev.chats.some((chat) => chat.id === message.chatId)
+        ? prev.chats
+        : [
+            ...prev.chats,
+            {
+              id: message.chatId,
+              phone: message.chatId.replace(/@c\.us$/, ''),
+              title: message.chatId.replace(/@c\.us$/, ''),
+            },
+          ];
+
+      const isActive = prev.activeChatId === message.chatId;
+      const unreadByChat = { ...prev.unreadByChat };
+      let activeChatId = prev.activeChatId;
+
+      // Если чат ещё не выбран — открываем тот, куда пришло сообщение.
+      if (!activeChatId) {
+        activeChatId = message.chatId;
+      } else if (message.direction === 'incoming' && !isActive) {
+        unreadByChat[message.chatId] = (unreadByChat[message.chatId] ?? 0) + 1;
+      }
+
       return {
         ...prev,
-        [message.chatId]: [...list, message],
+        chats,
+        activeChatId,
+        messagesByChat: {
+          ...prev.messagesByChat,
+          [message.chatId]: [...list, message],
+        },
+        unreadByChat,
       };
     });
+  }, []);
 
-    setChats((prev) => {
-      if (prev.some((chat) => chat.id === message.chatId)) {
+  /** Вливает историю API, не затирая уже имеющиеся сообщения. */
+  const mergeHistory = useCallback((chatId: string, history: Message[]) => {
+    setSnapshot((prev) => {
+      const existing = prev.messagesByChat[chatId] ?? [];
+      const byId = new Map<string, Message>();
+
+      for (const item of history) {
+        byId.set(item.id, item);
+      }
+
+      for (const item of existing) {
+        byId.set(item.id, item);
+      }
+
+      const merged = [...byId.values()].sort(
+        (a, b) => a.timestamp - b.timestamp,
+      );
+
+      return {
+        ...prev,
+        messagesByChat: {
+          ...prev.messagesByChat,
+          [chatId]: merged,
+        },
+        historyLoaded: {
+          ...prev.historyLoaded,
+          [chatId]: true,
+        },
+      };
+    });
+  }, []);
+
+  const markHistoryLoaded = useCallback((chatId: string) => {
+    setSnapshot((prev) => {
+      if (prev.historyLoaded[chatId]) {
         return prev;
       }
 
-      const phone = message.chatId.replace(/@c\.us$/, '');
-
-      return [
+      return {
         ...prev,
-        {
-          id: message.chatId,
-          phone,
-          title: phone,
+        historyLoaded: {
+          ...prev.historyLoaded,
+          [chatId]: true,
         },
-      ];
+      };
     });
   }, []);
 
   /** Добавляет новый чат в список и сразу делает его активным. */
   const createChat = useCallback((chat: Chat) => {
-    setChats((prev) => {
-      if (prev.some((item) => item.id === chat.id)) {
-        return prev;
-      }
+    setSnapshot((prev) => {
+      const chats = prev.chats.some((item) => item.id === chat.id)
+        ? prev.chats
+        : [...prev.chats, chat];
 
-      return [...prev, chat];
+      const unreadByChat = { ...prev.unreadByChat };
+      delete unreadByChat[chat.id];
+
+      return {
+        ...prev,
+        chats,
+        activeChatId: chat.id,
+        unreadByChat,
+      };
     });
-
-    setActiveChatId(chat.id);
   }, []);
 
   const selectChat = useCallback((chat: Chat) => {
-    setActiveChatId(chat.id);
+    setSnapshot((prev) => {
+      const unreadByChat = { ...prev.unreadByChat };
+      delete unreadByChat[chat.id];
+
+      return {
+        ...prev,
+        activeChatId: chat.id,
+        unreadByChat,
+      };
+    });
   }, []);
 
   return {
-    chats,
+    chats: snapshot.chats,
     activeChat,
     messages,
+    unreadByChat: snapshot.unreadByChat,
+    historyLoaded: snapshot.historyLoaded,
     appendMessage,
+    mergeHistory,
+    markHistoryLoaded,
     createChat,
     selectChat,
   };

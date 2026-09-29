@@ -1,10 +1,16 @@
+import { useEffect, useRef } from 'react';
 import { MessageBubble } from '@/entities/message';
 import { useI18n } from '@/shared/i18n';
 import type { MessageListProps } from '../types';
 
-/** Список сообщений активного чата. */
+/** Список сообщений активного чата с автоскроллом к последнему. */
 export function MessageList({ messages }: MessageListProps) {
   const { t } = useI18n();
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages]);
 
   return (
     <div className="message-list">
@@ -15,6 +21,7 @@ export function MessageList({ messages }: MessageListProps) {
           <MessageBubble key={message.id} message={message} />
         ))
       )}
+      <div ref={bottomRef} />
     </div>
   );
 }
